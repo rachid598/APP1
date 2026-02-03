@@ -45,24 +45,6 @@
                 </div>
             </div>
 
-            <div class="menu-section">
-                <h2>Niveau de difficulté</h2>
-                <div class="difficulty-buttons">
-                    <button class="btn btn-difficulty active" data-difficulty="easy">
-                        <span>⭐</span>
-                        <span>Facile</span>
-                    </button>
-                    <button class="btn btn-difficulty" data-difficulty="medium">
-                        <span>⭐⭐</span>
-                        <span>Moyen</span>
-                    </button>
-                    <button class="btn btn-difficulty" data-difficulty="hard">
-                        <span>⭐⭐⭐</span>
-                        <span>Difficile</span>
-                    </button>
-                </div>
-            </div>
-
             <div class="stats-preview">
                 <div class="stat-item">
                     <span class="stat-icon">🏆</span>
@@ -71,8 +53,104 @@
                 </div>
                 <div class="stat-item">
                     <span class="stat-icon">🔥</span>
-                    <span class="stat-label">Série en cours</span>
+                    <span class="stat-label">Meilleure série</span>
                     <span id="current-streak" class="stat-value">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Écran de sélection de difficulté -->
+        <div id="difficulty-screen" class="screen">
+            <div class="difficulty-header">
+                <button id="back-to-home-btn" class="btn btn-icon-only">
+                    <span>←</span>
+                </button>
+                <div class="selected-operation">
+                    <span id="selected-op-icon" class="op-icon">➕</span>
+                    <span id="selected-op-name">Addition</span>
+                </div>
+                <div class="spacer"></div>
+            </div>
+
+            <div class="difficulty-content">
+                <h2>Choisis ton niveau</h2>
+
+                <div class="difficulty-cards">
+                    <button class="difficulty-card easy" data-difficulty="easy">
+                        <div class="difficulty-stars">⭐</div>
+                        <h3>Facile</h3>
+                        <div class="difficulty-info">
+                            <div class="info-item">
+                                <span class="info-icon">⏱️</span>
+                                <span class="info-text">120 secondes</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-icon">🔢</span>
+                                <span id="easy-numbers" class="info-text">Petits nombres</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-icon">❓</span>
+                                <span class="info-text">10 questions</span>
+                            </div>
+                        </div>
+                    </button>
+
+                    <button class="difficulty-card medium" data-difficulty="medium">
+                        <div class="difficulty-stars">⭐⭐</div>
+                        <h3>Moyen</h3>
+                        <div class="difficulty-info">
+                            <div class="info-item">
+                                <span class="info-icon">⏱️</span>
+                                <span class="info-text">90 secondes</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-icon">🔢</span>
+                                <span id="medium-numbers" class="info-text">Nombres moyens</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-icon">❓</span>
+                                <span class="info-text">10 questions</span>
+                            </div>
+                        </div>
+                    </button>
+
+                    <button class="difficulty-card hard" data-difficulty="hard">
+                        <div class="difficulty-stars">⭐⭐⭐</div>
+                        <h3>Difficile</h3>
+                        <div class="difficulty-info">
+                            <div class="info-item">
+                                <span class="info-icon">⏱️</span>
+                                <span class="info-text">60 secondes</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-icon">🔢</span>
+                                <span id="hard-numbers" class="info-text">Grands nombres</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-icon">❓</span>
+                                <span class="info-text">10 questions</span>
+                            </div>
+                        </div>
+                    </button>
+
+                    <button class="difficulty-card expert" data-difficulty="expert">
+                        <div class="difficulty-stars">🔥</div>
+                        <h3>Expert</h3>
+                        <div class="difficulty-info">
+                            <div class="info-item">
+                                <span class="info-icon">⏱️</span>
+                                <span class="info-text">45 secondes</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-icon">🔢</span>
+                                <span id="expert-numbers" class="info-text">Très grands nombres</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-icon">❓</span>
+                                <span class="info-text">10 questions</span>
+                            </div>
+                        </div>
+                    </button>
                 </div>
             </div>
         </div>

@@ -214,6 +214,160 @@ body {
     box-shadow: var(--shadow);
 }
 
+/* Écran de sélection de difficulté */
+.difficulty-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+}
+
+.selected-operation {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.op-icon {
+    font-size: 1.5rem;
+}
+
+.spacer {
+    width: 44px;
+}
+
+.difficulty-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.difficulty-content h2 {
+    text-align: center;
+    color: white;
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.difficulty-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.difficulty-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
+    border: none;
+    border-radius: var(--border-radius-lg);
+    background: var(--card-bg);
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
+    border-left: 5px solid transparent;
+}
+
+.difficulty-card:active {
+    transform: scale(0.98);
+}
+
+.difficulty-card.easy {
+    border-left-color: #22c55e;
+}
+
+.difficulty-card.easy:hover {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+}
+
+.difficulty-card.medium {
+    border-left-color: #f59e0b;
+}
+
+.difficulty-card.medium:hover {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+}
+
+.difficulty-card.hard {
+    border-left-color: #ef4444;
+}
+
+.difficulty-card.hard:hover {
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+}
+
+.difficulty-card.expert {
+    border-left-color: #8b5cf6;
+}
+
+.difficulty-card.expert:hover {
+    background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+}
+
+.difficulty-stars {
+    font-size: 1.2rem;
+    margin-bottom: 5px;
+}
+
+.difficulty-card h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+}
+
+.difficulty-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    width: 100%;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.info-icon {
+    font-size: 1rem;
+}
+
+.info-text {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* Mode sombre pour les cartes de difficulté */
+@media (prefers-color-scheme: dark) {
+    .difficulty-card.easy:hover {
+        background: linear-gradient(135deg, #1a2e1a 0%, #1f3d1f 100%);
+    }
+
+    .difficulty-card.medium:hover {
+        background: linear-gradient(135deg, #2e2a1a 0%, #3d3520 100%);
+    }
+
+    .difficulty-card.hard:hover {
+        background: linear-gradient(135deg, #2e1a1a 0%, #3d2020 100%);
+    }
+
+    .difficulty-card.expert:hover {
+        background: linear-gradient(135deg, #251a2e 0%, #302040 100%);
+    }
+}
+
 .stat-item {
     flex: 1;
     display: flex;

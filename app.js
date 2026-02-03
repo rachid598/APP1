@@ -9,40 +9,60 @@ const gameState = {
     streak: 0,
     bestStreak: 0,
     currentAnswer: null,
-    timeLeft: 60,
+    timeLeft: 120,
     timerId: null,
     startTime: null,
     isGameActive: false
 };
 
-// Configuration des difficultés
+// Configuration des difficultés par opération
+// Temps : Facile = 120s, Moyen = 90s, Difficile = 60s, Expert = 45s
 const difficultyConfig = {
-    easy: {
-        addition: { min: 1, max: 20 },
-        subtraction: { min: 1, max: 20 },
-        multiplication: { min: 2, max: 10 },
-        division: { min: 2, max: 10 },
-        time: 90
+    addition: {
+        easy: { min1: 1, max1: 20, min2: 1, max2: 20, time: 120, description: "1 à 20" },
+        medium: { min1: 10, max1: 100, min2: 10, max2: 100, time: 90, description: "10 à 100" },
+        hard: { min1: 100, max1: 500, min2: 100, max2: 500, time: 60, description: "100 à 500" },
+        expert: { min1: 500, max1: 1000, min2: 500, max2: 1000, time: 45, description: "500 à 1000" }
     },
-    medium: {
-        addition: { min: 10, max: 100 },
-        subtraction: { min: 10, max: 100 },
-        multiplication: { min: 2, max: 12 },
-        division: { min: 2, max: 12 },
-        time: 60
+    subtraction: {
+        easy: { min1: 5, max1: 20, min2: 1, max2: 10, time: 120, description: "5 à 20" },
+        medium: { min1: 20, max1: 100, min2: 10, max2: 50, time: 90, description: "20 à 100" },
+        hard: { min1: 100, max1: 500, min2: 50, max2: 200, time: 60, description: "100 à 500" },
+        expert: { min1: 500, max1: 1000, min2: 100, max2: 500, time: 45, description: "500 à 1000" }
     },
-    hard: {
-        addition: { min: 50, max: 500 },
-        subtraction: { min: 50, max: 500 },
-        multiplication: { min: 5, max: 15 },
-        division: { min: 3, max: 15 },
-        time: 45
+    multiplication: {
+        easy: { min1: 2, max1: 5, min2: 2, max2: 10, time: 120, description: "Tables 2 à 5" },
+        medium: { min1: 2, max1: 10, min2: 2, max2: 10, time: 90, description: "Tables 2 à 10" },
+        hard: { min1: 5, max1: 12, min2: 5, max2: 12, time: 60, description: "Tables 5 à 12" },
+        expert: { min1: 10, max1: 15, min2: 10, max2: 15, time: 45, description: "Tables 10 à 15" }
+    },
+    division: {
+        easy: { min1: 2, max1: 5, min2: 2, max2: 10, time: 120, description: "Diviseurs 2 à 5" },
+        medium: { min1: 2, max1: 10, min2: 2, max2: 10, time: 90, description: "Diviseurs 2 à 10" },
+        hard: { min1: 5, max1: 12, min2: 5, max2: 12, time: 60, description: "Diviseurs 5 à 12" },
+        expert: { min1: 10, max1: 15, min2: 5, max2: 15, time: 45, description: "Diviseurs 10 à 15" }
+    },
+    mix: {
+        easy: { time: 120, description: "Mélange facile" },
+        medium: { time: 90, description: "Mélange moyen" },
+        hard: { time: 60, description: "Mélange difficile" },
+        expert: { time: 45, description: "Mélange expert" }
     }
+};
+
+// Noms des opérations
+const operationNames = {
+    addition: { name: 'Addition', icon: '➕' },
+    subtraction: { name: 'Soustraction', icon: '➖' },
+    multiplication: { name: 'Multiplication', icon: '✖️' },
+    division: { name: 'Division', icon: '➗' },
+    mix: { name: 'Mélange', icon: '🎲' }
 };
 
 // Éléments du DOM
 const screens = {
     home: document.getElementById('home-screen'),
+    difficulty: document.getElementById('difficulty-screen'),
     game: document.getElementById('game-screen'),
     result: document.getElementById('result-screen')
 };
@@ -50,9 +70,18 @@ const screens = {
 const elements = {
     // Accueil
     operationButtons: document.querySelectorAll('.btn-operation'),
-    difficultyButtons: document.querySelectorAll('.btn-difficulty'),
     bestScore: document.getElementById('best-score'),
     currentStreak: document.getElementById('current-streak'),
+
+    // Sélection de difficulté
+    backToHomeBtn: document.getElementById('back-to-home-btn'),
+    selectedOpIcon: document.getElementById('selected-op-icon'),
+    selectedOpName: document.getElementById('selected-op-name'),
+    difficultyCards: document.querySelectorAll('.difficulty-card'),
+    easyNumbers: document.getElementById('easy-numbers'),
+    mediumNumbers: document.getElementById('medium-numbers'),
+    hardNumbers: document.getElementById('hard-numbers'),
+    expertNumbers: document.getElementById('expert-numbers'),
 
     // Jeu
     backBtn: document.getElementById('back-btn'),
@@ -89,24 +118,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Configuration des événements
 function setupEventListeners() {
-    // Boutons d'opération
+    // Boutons d'opération -> Écran de sélection de difficulté
     elements.operationButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             gameState.operation = btn.dataset.operation;
+            showDifficultyScreen();
+        });
+    });
+
+    // Bouton retour vers accueil
+    elements.backToHomeBtn.addEventListener('click', () => {
+        showScreen('home');
+    });
+
+    // Cartes de difficulté -> Démarrer le jeu
+    elements.difficultyCards.forEach(card => {
+        card.addEventListener('click', () => {
+            gameState.difficulty = card.dataset.difficulty;
             startGame();
         });
     });
 
-    // Boutons de difficulté
-    elements.difficultyButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            elements.difficultyButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            gameState.difficulty = btn.dataset.difficulty;
-        });
-    });
-
-    // Bouton retour
+    // Bouton retour depuis le jeu
     elements.backBtn.addEventListener('click', endGame);
 
     // Validation de la réponse
@@ -133,6 +166,22 @@ function showScreen(screenName) {
     screens[screenName].classList.add('active');
 }
 
+// Afficher l'écran de sélection de difficulté
+function showDifficultyScreen() {
+    const op = operationNames[gameState.operation];
+    elements.selectedOpIcon.textContent = op.icon;
+    elements.selectedOpName.textContent = op.name;
+
+    // Mettre à jour les descriptions des niveaux
+    const config = difficultyConfig[gameState.operation];
+    elements.easyNumbers.textContent = config.easy.description;
+    elements.mediumNumbers.textContent = config.medium.description;
+    elements.hardNumbers.textContent = config.hard.description;
+    elements.expertNumbers.textContent = config.expert.description;
+
+    showScreen('difficulty');
+}
+
 // Démarrer le jeu
 function startGame() {
     // Réinitialiser l'état
@@ -144,8 +193,8 @@ function startGame() {
     gameState.isGameActive = true;
     gameState.startTime = Date.now();
 
-    // Configurer le temps
-    const config = difficultyConfig[gameState.difficulty];
+    // Configurer le temps selon la difficulté
+    const config = getConfig();
     gameState.timeLeft = config.time;
 
     // Réinitialiser l'interface
@@ -172,6 +221,14 @@ function startGame() {
     setTimeout(() => elements.answerInput.focus(), 100);
 }
 
+// Obtenir la configuration actuelle
+function getConfig() {
+    if (gameState.operation === 'mix') {
+        return difficultyConfig.mix[gameState.difficulty];
+    }
+    return difficultyConfig[gameState.operation][gameState.difficulty];
+}
+
 // Terminer le jeu
 function endGame() {
     gameState.isGameActive = false;
@@ -181,7 +238,7 @@ function endGame() {
         gameState.timerId = null;
     }
 
-    showScreen('home');
+    showScreen('difficulty');
 }
 
 // Générer une question
@@ -205,34 +262,34 @@ function generateQuestion() {
     }
 
     // Générer les nombres selon la difficulté
-    const config = difficultyConfig[gameState.difficulty][operation];
+    const config = difficultyConfig[operation][gameState.difficulty];
     let num1, num2, answer, questionText;
 
     switch (operation) {
         case 'addition':
-            num1 = randomInt(config.min, config.max);
-            num2 = randomInt(config.min, config.max);
+            num1 = randomInt(config.min1, config.max1);
+            num2 = randomInt(config.min2, config.max2);
             answer = num1 + num2;
             questionText = `${num1} + ${num2} = ?`;
             break;
 
         case 'subtraction':
-            num1 = randomInt(config.min, config.max);
-            num2 = randomInt(config.min, Math.min(num1, config.max));
+            num1 = randomInt(config.min1, config.max1);
+            num2 = randomInt(config.min2, Math.min(num1, config.max2));
             answer = num1 - num2;
             questionText = `${num1} − ${num2} = ?`;
             break;
 
         case 'multiplication':
-            num1 = randomInt(config.min, config.max);
-            num2 = randomInt(config.min, config.max);
+            num1 = randomInt(config.min1, config.max1);
+            num2 = randomInt(config.min2, config.max2);
             answer = num1 * num2;
             questionText = `${num1} × ${num2} = ?`;
             break;
 
         case 'division':
-            num2 = randomInt(config.min, config.max);
-            answer = randomInt(config.min, config.max);
+            num2 = randomInt(config.min1, config.max1);
+            answer = randomInt(config.min2, config.max2);
             num1 = num2 * answer; // Assure une division exacte
             questionText = `${num1} ÷ ${num2} = ?`;
             break;
