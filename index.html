@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calcul Mental 6ème</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Écran d'accueil -->
+        <div id="home-screen" class="screen active">
+            <div class="logo">
+                <span class="logo-icon">🧮</span>
+                <h1>Calcul Mental</h1>
+                <p class="subtitle">Entraînement pour les 6ème</p>
+            </div>
+
+            <div class="menu-section">
+                <h2>Choisis ton opération</h2>
+                <div class="operation-buttons">
+                    <button class="btn btn-operation" data-operation="addition">
+                        <span class="btn-icon">➕</span>
+                        <span>Addition</span>
+                    </button>
+                    <button class="btn btn-operation" data-operation="subtraction">
+                        <span class="btn-icon">➖</span>
+                        <span>Soustraction</span>
+                    </button>
+                    <button class="btn btn-operation" data-operation="multiplication">
+                        <span class="btn-icon">✖️</span>
+                        <span>Multiplication</span>
+                    </button>
+                    <button class="btn btn-operation" data-operation="division">
+                        <span class="btn-icon">➗</span>
+                        <span>Division</span>
+                    </button>
+                    <button class="btn btn-operation btn-mix" data-operation="mix">
+                        <span class="btn-icon">🎲</span>
+                        <span>Mélange</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <h2>Niveau de difficulté</h2>
+                <div class="difficulty-buttons">
+                    <button class="btn btn-difficulty active" data-difficulty="easy">
+                        <span>⭐</span>
+                        <span>Facile</span>
+                    </button>
+                    <button class="btn btn-difficulty" data-difficulty="medium">
+                        <span>⭐⭐</span>
+                        <span>Moyen</span>
+                    </button>
+                    <button class="btn btn-difficulty" data-difficulty="hard">
+                        <span>⭐⭐⭐</span>
+                        <span>Difficile</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="stats-preview">
+                <div class="stat-item">
+                    <span class="stat-icon">🏆</span>
+                    <span class="stat-label">Meilleur score</span>
+                    <span id="best-score" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">🔥</span>
+                    <span class="stat-label">Série en cours</span>
+                    <span id="current-streak" class="stat-value">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Écran de jeu -->
+        <div id="game-screen" class="screen">
+            <div class="game-header">
+                <button id="back-btn" class="btn btn-icon-only">
+                    <span>←</span>
+                </button>
+                <div class="game-stats">
+                    <div class="stat">
+                        <span class="stat-icon">✅</span>
+                        <span id="correct-count">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-icon">❌</span>
+                        <span id="wrong-count">0</span>
+                    </div>
+                </div>
+                <div class="timer">
+                    <span class="timer-icon">⏱️</span>
+                    <span id="timer">60</span>s
+                </div>
+            </div>
+
+            <div class="progress-bar">
+                <div id="progress" class="progress"></div>
+            </div>
+
+            <div class="game-content">
+                <div class="question-card">
+                    <div class="question-number">Question <span id="question-num">1</span>/10</div>
+                    <div id="question" class="question">12 + 8 = ?</div>
+                </div>
+
+                <div id="feedback" class="feedback"></div>
+
+                <div class="answer-section">
+                    <input type="number" id="answer-input" class="answer-input" placeholder="Ta réponse" inputmode="numeric" autocomplete="off">
+                    <button id="submit-btn" class="btn btn-submit">
+                        Valider
+                    </button>
+                </div>
+
+                <div class="streak-display">
+                    <span id="streak-icon">🔥</span>
+                    <span>Série : </span>
+                    <span id="game-streak">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Écran de résultats -->
+        <div id="result-screen" class="screen">
+            <div class="result-content">
+                <div id="result-emoji" class="result-emoji">🎉</div>
+                <h2 id="result-title">Bravo !</h2>
+                <p id="result-message">Tu as terminé l'exercice !</p>
+
+                <div class="result-stats">
+                    <div class="result-stat">
+                        <span class="result-stat-value" id="final-correct">0</span>
+                        <span class="result-stat-label">Bonnes réponses</span>
+                    </div>
+                    <div class="result-stat">
+                        <span class="result-stat-value" id="final-wrong">0</span>
+                        <span class="result-stat-label">Erreurs</span>
+                    </div>
+                    <div class="result-stat">
+                        <span class="result-stat-value" id="final-percentage">0%</span>
+                        <span class="result-stat-label">Réussite</span>
+                    </div>
+                </div>
+
+                <div class="result-details">
+                    <div class="detail-item">
+                        <span>⏱️ Temps utilisé</span>
+                        <span id="time-used">0s</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>🔥 Meilleure série</span>
+                        <span id="best-streak">0</span>
+                    </div>
+                </div>
+
+                <div class="result-buttons">
+                    <button id="retry-btn" class="btn btn-primary">
+                        🔄 Rejouer
+                    </button>
+                    <button id="home-btn" class="btn btn-secondary">
+                        🏠 Accueil
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
