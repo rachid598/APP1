@@ -9,10 +9,30 @@ const gameState = {
     streak: 0,
     bestStreak: 0,
     currentAnswer: null,
+    currentQuestion: '',
     timeLeft: 120,
     timerId: null,
     startTime: null,
-    isGameActive: false
+    isGameActive: false,
+    zenMode: false,
+    wrongAnswers: [] // Stocke les erreurs pour le récapitulatif
+};
+
+// Système de badges
+const badgesConfig = {
+    firstGame: { id: 'firstGame', name: 'Premier pas', icon: '🎯', description: 'Terminer ta première partie', condition: (stats) => stats.totalGames >= 1 },
+    tenGames: { id: 'tenGames', name: 'Habitué', icon: '🎮', description: 'Jouer 10 parties', condition: (stats) => stats.totalGames >= 10 },
+    fiftyGames: { id: 'fiftyGames', name: 'Accro', icon: '🕹️', description: 'Jouer 50 parties', condition: (stats) => stats.totalGames >= 50 },
+    perfect: { id: 'perfect', name: 'Parfait !', icon: '💯', description: 'Obtenir 100% de bonnes réponses', condition: (stats) => stats.perfectGames >= 1 },
+    fivePerfect: { id: 'fivePerfect', name: 'Excellence', icon: '🌟', description: 'Obtenir 5 parties parfaites', condition: (stats) => stats.perfectGames >= 5 },
+    streak5: { id: 'streak5', name: 'En feu !', icon: '🔥', description: 'Faire une série de 5 bonnes réponses', condition: (stats) => stats.bestStreak >= 5 },
+    streak10: { id: 'streak10', name: 'Inarrêtable', icon: '⚡', description: 'Faire une série de 10 bonnes réponses', condition: (stats) => stats.bestStreak >= 10 },
+    additionMaster: { id: 'additionMaster', name: 'Maître Addition', icon: '➕', description: '100% en Addition (niveau Difficile+)', condition: (stats) => stats.masteredOperations?.addition },
+    subtractionMaster: { id: 'subtractionMaster', name: 'Maître Soustraction', icon: '➖', description: '100% en Soustraction (niveau Difficile+)', condition: (stats) => stats.masteredOperations?.subtraction },
+    multiplicationMaster: { id: 'multiplicationMaster', name: 'Maître Multiplication', icon: '✖️', description: '100% en Multiplication (niveau Difficile+)', condition: (stats) => stats.masteredOperations?.multiplication },
+    divisionMaster: { id: 'divisionMaster', name: 'Maître Division', icon: '➗', description: '100% en Division (niveau Difficile+)', condition: (stats) => stats.masteredOperations?.division },
+    zenMaster: { id: 'zenMaster', name: 'Zen Master', icon: '🧘', description: 'Terminer 5 parties en mode Zen', condition: (stats) => stats.zenGames >= 5 },
+    speedDemon: { id: 'speedDemon', name: 'Éclair', icon: '⚡', description: 'Terminer en mode Expert avec 80%+', condition: (stats) => stats.expertWins >= 1 }
 };
 
 // Configuration des difficultés par opération
@@ -64,7 +84,8 @@ const screens = {
     home: document.getElementById('home-screen'),
     difficulty: document.getElementById('difficulty-screen'),
     game: document.getElementById('game-screen'),
-    result: document.getElementById('result-screen')
+    result: document.getElementById('result-screen'),
+    badges: document.getElementById('badges-screen')
 };
 
 const elements = {
@@ -107,7 +128,24 @@ const elements = {
     timeUsed: document.getElementById('time-used'),
     bestStreakResult: document.getElementById('best-streak'),
     retryBtn: document.getElementById('retry-btn'),
-    homeBtn: document.getElementById('home-btn')
+    homeBtn: document.getElementById('home-btn'),
+    errorsRecap: document.getElementById('errors-recap'),
+    errorsList: document.getElementById('errors-list'),
+
+    // Mode Zen
+    zenToggle: document.getElementById('zen-toggle'),
+    zenLabel: document.getElementById('zen-label'),
+    timerContainer: document.querySelector('.timer'),
+
+    // Badges
+    badgesBtn: document.getElementById('badges-btn'),
+    badgesScreen: document.getElementById('badges-screen'),
+    badgesGrid: document.getElementById('badges-grid'),
+    backFromBadgesBtn: document.getElementById('back-from-badges-btn'),
+    badgeCount: document.getElementById('badge-count'),
+    newBadgePopup: document.getElementById('new-badge-popup'),
+    newBadgeIcon: document.getElementById('new-badge-icon'),
+    newBadgeName: document.getElementById('new-badge-name')
 };
 
 // Initialisation
@@ -158,6 +196,41 @@ function setupEventListeners() {
     elements.homeBtn.addEventListener('click', () => {
         showScreen('home');
     });
+
+    // Mode Zen toggle
+    if (elements.zenToggle) {
+        elements.zenToggle.addEventListener('change', (e) => {
+            gameState.zenMode = e.target.checked;
+            updateZenLabel();
+        });
+    }
+
+    // Badges
+    if (elements.badgesBtn) {
+        elements.badgesBtn.addEventListener('click', () => {
+            showBadgesScreen();
+        });
+    }
+
+    if (elements.backFromBadgesBtn) {
+        elements.backFromBadgesBtn.addEventListener('click', () => {
+            showScreen('home');
+        });
+    }
+
+    // Fermer popup badge
+    if (elements.newBadgePopup) {
+        elements.newBadgePopup.addEventListener('click', () => {
+            elements.newBadgePopup.classList.remove('show');
+        });
+    }
+}
+
+// Mettre à jour le label du mode Zen
+function updateZenLabel() {
+    if (elements.zenLabel) {
+        elements.zenLabel.textContent = gameState.zenMode ? 'Mode Zen activé' : 'Mode chronométré';
+    }
 }
 
 // Afficher un écran
@@ -192,6 +265,7 @@ function startGame() {
     gameState.bestStreak = 0;
     gameState.isGameActive = true;
     gameState.startTime = Date.now();
+    gameState.wrongAnswers = []; // Réinitialiser les erreurs
 
     // Configurer le temps selon la difficulté
     const config = getConfig();
@@ -207,15 +281,30 @@ function startGame() {
     elements.answerInput.value = '';
     elements.streakDisplay.classList.remove('hot');
 
+    // Gérer l'affichage du timer selon le mode Zen
+    if (elements.timerContainer) {
+        if (gameState.zenMode) {
+            elements.timerContainer.classList.add('zen-mode');
+            elements.timerContainer.innerHTML = '<span class="timer-icon">🧘</span><span>Zen</span>';
+        } else {
+            elements.timerContainer.classList.remove('zen-mode');
+            elements.timerContainer.innerHTML = '<span class="timer-icon">⏱️</span><span id="timer">60</span>s';
+            // Re-sélectionner l'élément timer après modification du DOM
+            elements.timer = document.getElementById('timer');
+        }
+    }
+
     // Afficher l'écran de jeu
     showScreen('game');
 
     // Générer la première question
     generateQuestion();
 
-    // Démarrer le timer
-    updateTimerDisplay();
-    gameState.timerId = setInterval(updateTimer, 1000);
+    // Démarrer le timer seulement si pas en mode Zen
+    if (!gameState.zenMode) {
+        updateTimerDisplay();
+        gameState.timerId = setInterval(updateTimer, 1000);
+    }
 
     // Focus sur l'input
     setTimeout(() => elements.answerInput.focus(), 100);
@@ -296,6 +385,7 @@ function generateQuestion() {
     }
 
     gameState.currentAnswer = answer;
+    gameState.currentQuestion = questionText; // Sauvegarder pour le récapitulatif
     elements.question.textContent = questionText;
 
     // Réinitialiser l'input
@@ -335,6 +425,13 @@ function checkAnswer() {
         elements.wrongCount.textContent = gameState.wrongCount;
         elements.answerInput.classList.add('wrong');
         showFeedback(`Oups ! La réponse était ${gameState.currentAnswer}`, 'wrong');
+
+        // Sauvegarder l'erreur pour le récapitulatif
+        gameState.wrongAnswers.push({
+            question: gameState.currentQuestion,
+            userAnswer: userAnswer,
+            correctAnswer: gameState.currentAnswer
+        });
     }
 
     // Mettre à jour la série
@@ -426,20 +523,50 @@ function showResults() {
     elements.finalCorrect.textContent = gameState.correctCount;
     elements.finalWrong.textContent = gameState.wrongCount;
     elements.finalPercentage.textContent = `${percentage}%`;
-    elements.timeUsed.textContent = `${timeUsed}s`;
+    elements.timeUsed.textContent = gameState.zenMode ? 'Mode Zen' : `${timeUsed}s`;
     elements.bestStreakResult.textContent = gameState.bestStreak;
 
-    // Sauvegarder les stats
-    saveStats(gameState.correctCount, gameState.bestStreak);
+    // Afficher le récapitulatif des erreurs
+    displayErrorsRecap();
+
+    // Sauvegarder les stats et vérifier les badges
+    saveStats(gameState.correctCount, gameState.bestStreak, percentage);
 
     // Afficher l'écran de résultats
     showScreen('result');
 }
 
+// Afficher le récapitulatif des erreurs
+function displayErrorsRecap() {
+    if (!elements.errorsRecap || !elements.errorsList) return;
+
+    if (gameState.wrongAnswers.length === 0) {
+        elements.errorsRecap.classList.add('hidden');
+        return;
+    }
+
+    elements.errorsRecap.classList.remove('hidden');
+    elements.errorsList.innerHTML = '';
+
+    gameState.wrongAnswers.forEach((error, index) => {
+        const errorItem = document.createElement('div');
+        errorItem.className = 'error-item';
+        errorItem.innerHTML = `
+            <span class="error-question">${error.question.replace(' = ?', '')}</span>
+            <span class="error-answers">
+                <span class="user-answer">Ta réponse : ${error.userAnswer}</span>
+                <span class="correct-answer">Bonne réponse : ${error.correctAnswer}</span>
+            </span>
+        `;
+        elements.errorsList.appendChild(errorItem);
+    });
+}
+
 // Sauvegarder les statistiques
-function saveStats(score, streak) {
+function saveStats(score, streak, percentage) {
     const stats = JSON.parse(localStorage.getItem('calculMentalStats') || '{}');
 
+    // Stats de base
     if (!stats.bestScore || score > stats.bestScore) {
         stats.bestScore = score;
     }
@@ -448,8 +575,93 @@ function saveStats(score, streak) {
         stats.bestStreak = streak;
     }
 
+    // Stats pour les badges
+    stats.totalGames = (stats.totalGames || 0) + 1;
+
+    if (percentage === 100) {
+        stats.perfectGames = (stats.perfectGames || 0) + 1;
+
+        // Vérifier maîtrise d'opération (niveau difficile ou expert)
+        if ((gameState.difficulty === 'hard' || gameState.difficulty === 'expert') && gameState.operation !== 'mix') {
+            stats.masteredOperations = stats.masteredOperations || {};
+            stats.masteredOperations[gameState.operation] = true;
+        }
+    }
+
+    if (gameState.zenMode) {
+        stats.zenGames = (stats.zenGames || 0) + 1;
+    }
+
+    if (gameState.difficulty === 'expert' && percentage >= 80) {
+        stats.expertWins = (stats.expertWins || 0) + 1;
+    }
+
+    // Badges débloqués
+    stats.unlockedBadges = stats.unlockedBadges || [];
+
+    // Vérifier les nouveaux badges
+    const newBadges = checkNewBadges(stats);
+    if (newBadges.length > 0) {
+        stats.unlockedBadges = [...new Set([...stats.unlockedBadges, ...newBadges])];
+        // Afficher le popup pour le premier nouveau badge
+        showNewBadgePopup(newBadges[0]);
+    }
+
     localStorage.setItem('calculMentalStats', JSON.stringify(stats));
     loadStats();
+}
+
+// Vérifier les nouveaux badges débloqués
+function checkNewBadges(stats) {
+    const newBadges = [];
+    const unlockedBadges = stats.unlockedBadges || [];
+
+    for (const [id, badge] of Object.entries(badgesConfig)) {
+        if (!unlockedBadges.includes(id) && badge.condition(stats)) {
+            newBadges.push(id);
+        }
+    }
+
+    return newBadges;
+}
+
+// Afficher le popup de nouveau badge
+function showNewBadgePopup(badgeId) {
+    const badge = badgesConfig[badgeId];
+    if (!badge || !elements.newBadgePopup) return;
+
+    elements.newBadgeIcon.textContent = badge.icon;
+    elements.newBadgeName.textContent = badge.name;
+    elements.newBadgePopup.classList.add('show');
+
+    // Cacher automatiquement après 3 secondes
+    setTimeout(() => {
+        elements.newBadgePopup.classList.remove('show');
+    }, 3000);
+}
+
+// Afficher l'écran des badges
+function showBadgesScreen() {
+    const stats = JSON.parse(localStorage.getItem('calculMentalStats') || '{}');
+    const unlockedBadges = stats.unlockedBadges || [];
+
+    if (!elements.badgesGrid) return;
+
+    elements.badgesGrid.innerHTML = '';
+
+    for (const [id, badge] of Object.entries(badgesConfig)) {
+        const isUnlocked = unlockedBadges.includes(id);
+        const badgeCard = document.createElement('div');
+        badgeCard.className = `badge-card ${isUnlocked ? 'unlocked' : 'locked'}`;
+        badgeCard.innerHTML = `
+            <span class="badge-icon">${isUnlocked ? badge.icon : '🔒'}</span>
+            <span class="badge-name">${badge.name}</span>
+            <span class="badge-desc">${badge.description}</span>
+        `;
+        elements.badgesGrid.appendChild(badgeCard);
+    }
+
+    showScreen('badges');
 }
 
 // Charger les statistiques
@@ -457,6 +669,13 @@ function loadStats() {
     const stats = JSON.parse(localStorage.getItem('calculMentalStats') || '{}');
     elements.bestScore.textContent = stats.bestScore || 0;
     elements.currentStreak.textContent = stats.bestStreak || 0;
+
+    // Mettre à jour le compteur de badges
+    if (elements.badgeCount) {
+        const unlockedCount = (stats.unlockedBadges || []).length;
+        const totalCount = Object.keys(badgesConfig).length;
+        elements.badgeCount.textContent = `${unlockedCount}/${totalCount}`;
+    }
 }
 
 // Générer un nombre aléatoire

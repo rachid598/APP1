@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calcul Mental 6ème</title>
+    <meta name="description" content="Application de calcul mental pour les élèves de 6ème">
+    <meta name="theme-color" content="#6366f1">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192.svg">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -57,6 +61,12 @@
                     <span id="current-streak" class="stat-value">0</span>
                 </div>
             </div>
+
+            <button id="badges-btn" class="btn btn-badges">
+                <span class="btn-icon">🏅</span>
+                <span>Mes badges</span>
+                <span id="badge-count" class="badge-count">0/13</span>
+            </button>
         </div>
 
         <!-- Écran de sélection de difficulté -->
@@ -74,6 +84,14 @@
 
             <div class="difficulty-content">
                 <h2>Choisis ton niveau</h2>
+
+                <div class="zen-toggle-container">
+                    <label class="zen-toggle">
+                        <input type="checkbox" id="zen-toggle">
+                        <span class="zen-slider"></span>
+                    </label>
+                    <span id="zen-label" class="zen-label">Mode chronométré</span>
+                </div>
 
                 <div class="difficulty-cards">
                     <button class="difficulty-card easy" data-difficulty="easy">
@@ -237,6 +255,11 @@
                     </div>
                 </div>
 
+                <div id="errors-recap" class="errors-recap hidden">
+                    <h3>📝 Récapitulatif des erreurs</h3>
+                    <div id="errors-list" class="errors-list"></div>
+                </div>
+
                 <div class="result-buttons">
                     <button id="retry-btn" class="btn btn-primary">
                         🔄 Rejouer
@@ -246,6 +269,27 @@
                     </button>
                 </div>
             </div>
+        </div>
+
+        <!-- Écran des badges -->
+        <div id="badges-screen" class="screen">
+            <div class="badges-header">
+                <button id="back-from-badges-btn" class="btn btn-icon-only">
+                    <span>←</span>
+                </button>
+                <h2>🏅 Mes badges</h2>
+                <div class="spacer"></div>
+            </div>
+            <div id="badges-grid" class="badges-grid"></div>
+        </div>
+    </div>
+
+    <!-- Popup nouveau badge -->
+    <div id="new-badge-popup" class="new-badge-popup">
+        <div class="new-badge-content">
+            <span class="new-badge-title">Nouveau badge !</span>
+            <span id="new-badge-icon" class="new-badge-icon">🏅</span>
+            <span id="new-badge-name" class="new-badge-name">Badge</span>
         </div>
     </div>
 
