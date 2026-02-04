@@ -1,3 +1,197 @@
+// ========================================
+// SYSTÈME DE SONS (Web Audio API)
+// ========================================
+
+const soundSystem = {
+    enabled: true,
+    audioContext: null,
+
+    init() {
+        // Charger la préférence
+        const saved = localStorage.getItem('soundEnabled');
+        this.enabled = saved !== 'false';
+        this.updateButton();
+    },
+
+    getContext() {
+        if (!this.audioContext) {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        return this.audioContext;
+    },
+
+    toggle() {
+        this.enabled = !this.enabled;
+        localStorage.setItem('soundEnabled', this.enabled);
+        this.updateButton();
+        if (this.enabled) {
+            this.playClick();
+        }
+    },
+
+    updateButton() {
+        const btn = document.getElementById('sound-toggle');
+        if (btn) {
+            btn.textContent = this.enabled ? '🔊' : '🔇';
+            btn.classList.toggle('muted', !this.enabled);
+        }
+    },
+
+    // Son de bonne réponse (note joyeuse ascendante)
+    playCorrect() {
+        if (!this.enabled) return;
+        const ctx = this.getContext();
+        const now = ctx.currentTime;
+
+        // Deux notes ascendantes
+        [440, 554.37, 659.25].forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.frequency.value = freq;
+            osc.type = 'sine';
+            gain.gain.setValueAtTime(0.3, now + i * 0.1);
+            gain.gain.exponentialDecayTo ? gain.gain.exponentialDecayTo(0.01, now + i * 0.1 + 0.2) : gain.gain.setValueAtTime(0.01, now + i * 0.1 + 0.2);
+            osc.start(now + i * 0.1);
+            osc.stop(now + i * 0.1 + 0.2);
+        });
+    },
+
+    // Son de mauvaise réponse (buzz grave)
+    playWrong() {
+        if (!this.enabled) return;
+        const ctx = this.getContext();
+        const now = ctx.currentTime;
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 150;
+        osc.type = 'square';
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.setValueAtTime(0.01, now + 0.3);
+        osc.start(now);
+        osc.stop(now + 0.3);
+    },
+
+    // Son de clic
+    playClick() {
+        if (!this.enabled) return;
+        const ctx = this.getContext();
+        const now = ctx.currentTime;
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 800;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.setValueAtTime(0.01, now + 0.05);
+        osc.start(now);
+        osc.stop(now + 0.05);
+    },
+
+    // Son de badge débloqué (fanfare)
+    playBadge() {
+        if (!this.enabled) return;
+        const ctx = this.getContext();
+        const now = ctx.currentTime;
+
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // Do Mi Sol Do
+        notes.forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.frequency.value = freq;
+            osc.type = 'sine';
+            gain.gain.setValueAtTime(0.25, now + i * 0.15);
+            gain.gain.setValueAtTime(0.01, now + i * 0.15 + 0.3);
+            osc.start(now + i * 0.15);
+            osc.stop(now + i * 0.15 + 0.3);
+        });
+    },
+
+    // Son de fin de partie (victoire ou défaite)
+    playGameEnd(success) {
+        if (!this.enabled) return;
+        const ctx = this.getContext();
+        const now = ctx.currentTime;
+
+        if (success) {
+            // Victoire : arpège majeur
+            const notes = [261.63, 329.63, 392, 523.25];
+            notes.forEach((freq, i) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = freq;
+                osc.type = 'sine';
+                gain.gain.setValueAtTime(0.2, now + i * 0.12);
+                gain.gain.setValueAtTime(0.01, now + i * 0.12 + 0.4);
+                osc.start(now + i * 0.12);
+                osc.stop(now + i * 0.12 + 0.4);
+            });
+        } else {
+            // Moins bon score : notes descendantes
+            const notes = [392, 349.23, 329.63, 261.63];
+            notes.forEach((freq, i) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = freq;
+                osc.type = 'triangle';
+                gain.gain.setValueAtTime(0.15, now + i * 0.2);
+                gain.gain.setValueAtTime(0.01, now + i * 0.2 + 0.3);
+                osc.start(now + i * 0.2);
+                osc.stop(now + i * 0.2 + 0.3);
+            });
+        }
+    },
+
+    // Son de série en feu
+    playStreak() {
+        if (!this.enabled) return;
+        const ctx = this.getContext();
+        const now = ctx.currentTime;
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.setValueAtTime(600, now);
+        osc.frequency.linearRampToValueAtTime(1200, now + 0.1);
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.setValueAtTime(0.01, now + 0.15);
+        osc.start(now);
+        osc.stop(now + 0.15);
+    },
+
+    // Son de compte à rebours urgent
+    playTick() {
+        if (!this.enabled) return;
+        const ctx = this.getContext();
+        const now = ctx.currentTime;
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 1000;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.setValueAtTime(0.01, now + 0.05);
+        osc.start(now);
+        osc.stop(now + 0.05);
+    }
+};
+
 // État du jeu
 const gameState = {
     operation: 'addition',
@@ -152,6 +346,13 @@ const elements = {
 document.addEventListener('DOMContentLoaded', () => {
     loadStats();
     setupEventListeners();
+    soundSystem.init();
+
+    // Bouton son
+    const soundToggle = document.getElementById('sound-toggle');
+    if (soundToggle) {
+        soundToggle.addEventListener('click', () => soundSystem.toggle());
+    }
 });
 
 // Configuration des événements
@@ -419,12 +620,14 @@ function checkAnswer() {
         elements.correctCount.textContent = gameState.correctCount;
         elements.answerInput.classList.add('correct');
         showFeedback('Bravo ! 🎉', 'correct');
+        soundSystem.playCorrect();
     } else {
         gameState.wrongCount++;
         gameState.streak = 0;
         elements.wrongCount.textContent = gameState.wrongCount;
         elements.answerInput.classList.add('wrong');
         showFeedback(`Oups ! La réponse était ${gameState.currentAnswer}`, 'wrong');
+        soundSystem.playWrong();
 
         // Sauvegarder l'erreur pour le récapitulatif
         gameState.wrongAnswers.push({
@@ -438,6 +641,9 @@ function checkAnswer() {
     elements.gameStreak.textContent = gameState.streak;
     if (gameState.streak >= 3) {
         elements.streakDisplay.classList.add('hot');
+        if (gameState.streak === 3 || gameState.streak === 5 || gameState.streak === 10) {
+            soundSystem.playStreak();
+        }
     } else {
         elements.streakDisplay.classList.remove('hot');
     }
@@ -460,6 +666,11 @@ function updateTimer() {
 
     gameState.timeLeft--;
     updateTimerDisplay();
+
+    // Son de tick quand il reste peu de temps
+    if (gameState.timeLeft <= 10 && gameState.timeLeft > 0) {
+        soundSystem.playTick();
+    }
 
     if (gameState.timeLeft <= 0) {
         showResults();
@@ -528,6 +739,9 @@ function showResults() {
 
     // Afficher le récapitulatif des erreurs
     displayErrorsRecap();
+
+    // Jouer le son de fin de partie
+    soundSystem.playGameEnd(percentage >= 70);
 
     // Sauvegarder les stats et vérifier les badges
     saveStats(gameState.correctCount, gameState.bestStreak, percentage);
@@ -633,6 +847,9 @@ function showNewBadgePopup(badgeId) {
     elements.newBadgeIcon.textContent = badge.icon;
     elements.newBadgeName.textContent = badge.name;
     elements.newBadgePopup.classList.add('show');
+
+    // Jouer le son de badge
+    setTimeout(() => soundSystem.playBadge(), 300);
 
     // Cacher automatiquement après 3 secondes
     setTimeout(() => {
