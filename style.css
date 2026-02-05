@@ -1578,3 +1578,113 @@ body {
         font-size: 1.8rem;
     }
 }
+
+/* ========================================
+   BANNIÈRE D'INSTALLATION PWA
+   ======================================== */
+
+.install-banner {
+    position: fixed;
+    bottom: -120px;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    transition: bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 0 15px 15px;
+}
+
+.install-banner.show {
+    bottom: 0;
+}
+
+.install-content {
+    max-width: 500px;
+    margin: 0 auto;
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.25);
+}
+
+.install-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.install-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.install-text strong {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+
+.install-text span {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.btn-install {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+    flex-shrink: 0;
+}
+
+.btn-install:hover {
+    opacity: 0.9;
+}
+
+.install-dismiss {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 5px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.install-dismiss:hover {
+    color: var(--text-primary);
+}
+
+@media (min-width: 768px) {
+    .install-content {
+        max-width: 600px;
+        padding: 20px 25px;
+    }
+
+    .install-icon {
+        font-size: 2.5rem;
+    }
+
+    .install-text strong {
+        font-size: 1.05rem;
+    }
+
+    .install-text span {
+        font-size: 0.9rem;
+    }
+
+    .btn-install {
+        padding: 12px 25px;
+        font-size: 0.95rem;
+    }
+}

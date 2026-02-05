@@ -900,11 +900,90 @@ function randomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// Service Worker pour mode hors-ligne (optionnel)
+// ========================================
+// PWA : Service Worker + Installation
+// ========================================
+
+let deferredPrompt = null;
+
+// Enregistrement du Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch(() => {
-            // Service worker non disponible, pas de problème
-        });
+        navigator.serviceWorker.register('./sw.js')
+            .then(reg => {
+                console.log('Service Worker enregistré', reg.scope);
+                // Vérifier les mises à jour
+                reg.addEventListener('updatefound', () => {
+                    const newWorker = reg.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'activated') {
+                            console.log('Nouvelle version disponible');
+                        }
+                    });
+                });
+            })
+            .catch(err => {
+                console.log('Erreur Service Worker:', err);
+            });
     });
 }
+
+// Intercepter l'événement d'installation
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+
+    // Vérifier si l'utilisateur n'a pas déjà fermé la bannière
+    const dismissed = localStorage.getItem('installDismissed');
+    if (!dismissed) {
+        showInstallBanner();
+    }
+});
+
+// Afficher la bannière d'installation
+function showInstallBanner() {
+    const banner = document.getElementById('install-banner');
+    if (!banner) return;
+
+    setTimeout(() => {
+        banner.classList.add('show');
+    }, 2000); // Attendre 2s avant d'afficher
+}
+
+// Bouton installer
+document.addEventListener('DOMContentLoaded', () => {
+    const installBtn = document.getElementById('install-btn');
+    const dismissBtn = document.getElementById('install-dismiss');
+    const banner = document.getElementById('install-banner');
+
+    if (installBtn) {
+        installBtn.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+
+            deferredPrompt.prompt();
+            const result = await deferredPrompt.userChoice;
+
+            if (result.outcome === 'accepted') {
+                console.log('App installée');
+            }
+
+            deferredPrompt = null;
+            if (banner) banner.classList.remove('show');
+        });
+    }
+
+    if (dismissBtn) {
+        dismissBtn.addEventListener('click', () => {
+            if (banner) banner.classList.remove('show');
+            localStorage.setItem('installDismissed', 'true');
+        });
+    }
+});
+
+// Détecter si l'app est déjà installée
+window.addEventListener('appinstalled', () => {
+    deferredPrompt = null;
+    const banner = document.getElementById('install-banner');
+    if (banner) banner.classList.remove('show');
+    console.log('Application installée avec succès');
+});
