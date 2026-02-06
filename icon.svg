@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea"/>
+      <stop offset="100%" style="stop-color:#764ba2"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:rgba(255,255,255,0.3)"/>
+      <stop offset="50%" style="stop-color:rgba(255,255,255,0)"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Fond arrondi -->
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+
+  <!-- Effet de brillance -->
+  <rect width="512" height="512" rx="96" fill="url(#shine)"/>
+
+  <!-- Cercle central blanc -->
+  <circle cx="256" cy="240" r="140" fill="rgba(255,255,255,0.95)"/>
+
+  <!-- Symboles mathématiques -->
+  <!-- Plus -->
+  <g fill="#667eea">
+    <rect x="170" y="155" width="60" height="14" rx="7"/>
+    <rect x="193" y="132" width="14" height="60" rx="7"/>
+  </g>
+
+  <!-- Moins -->
+  <g fill="#f472b6">
+    <rect x="282" y="155" width="60" height="14" rx="7"/>
+  </g>
+
+  <!-- Multiplier -->
+  <g fill="#22c55e">
+    <rect x="170" y="290" width="60" height="14" rx="7" transform="rotate(45 200 297)"/>
+    <rect x="170" y="290" width="60" height="14" rx="7" transform="rotate(-45 200 297)"/>
+  </g>
+
+  <!-- Diviser -->
+  <g fill="#f59e0b">
+    <rect x="282" y="290" width="60" height="14" rx="7"/>
+    <circle cx="312" cy="272" r="10"/>
+    <circle cx="312" cy="322" r="10"/>
+  </g>
+
+  <!-- Nombre central "6e" -->
+  <text x="256" y="255" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="#764ba2" text-anchor="middle">6<tspan font-size="48" baseline-shift="super">e</tspan></text>
+
+  <!-- Badge étoile -->
+  <circle cx="400" cy="400" r="70" fill="#fbbf24"/>
+  <circle cx="400" cy="400" r="55" fill="#f59e0b"/>
+
+  <!-- Étoile dans le badge -->
+  <polygon points="400,355 412,385 445,385 418,405 428,435 400,418 372,435 382,405 355,385 388,385" fill="white"/>
+</svg>
