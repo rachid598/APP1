@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { GameState, Operation, Difficulty, WrongAnswer, Badge, GameStats } from './types';
 import { generateQuestion, getTimeBonus, getInitialTime } from './utils/MathEngine';
 import { SoundSystem, vibrate } from './utils/SoundSystem';
@@ -25,6 +25,10 @@ function App() {
   const [soundEnabled, setSoundEnabled] = useState(loadSoundPreference);
   const [zenMode, setZenMode] = useState(loadZenMode);
   const [newBadges, setNewBadges] = useState<Badge[]>([]);
+
+  // Response time tracking
+  const questionStartTime = useRef<number>(Date.now());
+  const totalResponseTime = useRef<number>(0);
 
   const [gameState, setGameState] = useState<GameState>({
     screen: 'home',
@@ -58,6 +62,10 @@ function App() {
   // Handle difficulty selection and start game
   const handleSelectDifficulty = useCallback((difficulty: Difficulty) => {
     const question = generateQuestion(gameState.operation, difficulty);
+    // Reset response time tracking
+    questionStartTime.current = Date.now();
+    totalResponseTime.current = 0;
+
     setGameState(prev => ({
       ...prev,
       screen: 'game',
@@ -78,6 +86,11 @@ function App() {
   const handleAnswer = useCallback((answer: number) => {
     const { currentQuestion, difficulty, operation } = gameState;
     if (!currentQuestion) return;
+
+    // Track response time
+    const responseTime = (Date.now() - questionStartTime.current) / 1000;
+    totalResponseTime.current += responseTime;
+    questionStartTime.current = Date.now(); // Reset for next question
 
     const isCorrect = answer === currentQuestion.answer;
 
@@ -260,12 +273,18 @@ function App() {
       ) : null;
 
     case 'result':
+      const avgResponseTime = gameState.totalQuestions > 0
+        ? totalResponseTime.current / gameState.totalQuestions
+        : 0;
       return (
         <ResultScreen
           score={gameState.score}
+          totalQuestions={gameState.totalQuestions}
           maxStreak={gameState.maxStreak}
           wrongAnswers={gameState.wrongAnswers}
           newBadges={newBadges}
+          difficulty={gameState.difficulty}
+          averageResponseTime={avgResponseTime}
           onPlayAgain={handlePlayAgain}
           onGoHome={handleGoHome}
         />
